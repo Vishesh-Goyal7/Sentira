@@ -48,26 +48,23 @@ def signup():
 
     return jsonify({"success": True}), 201
 
-
 @app.route("/api/sentiment", methods=["GET"])
 def get_sentiment():
-    keyword_doc = tweets_collection.find_one({}, {"keyword": 1, "sentiment": 1, "aspect_sentiment": 1})
+     
+    keyword_doc = tweets_collection.find_one({}, {"keyword": 1, "sentiment": 1, "clean_text": 1})
 
     if not keyword_doc:
         return jsonify({"error": "No data found"}), 404
 
-    sentiment_counts = {
-        "positive_count": sum(1 for s in keyword_doc["sentiment"] if s == "Positive"),
-        "negative_count": sum(1 for s in keyword_doc["sentiment"] if s == "Negative"),
-        "neutral_count": sum(1 for s in keyword_doc["sentiment"] if s == "Neutral"),
-    }
+    positive_count = tweets_collection.count_documents({"sentiment": "Positive"})
+    negative_count = tweets_collection.count_documents({"sentiment": "Negative"})
+    neutral_count = tweets_collection.count_documents({"sentiment": "Neutral"})
 
     return jsonify({
         "keyword": keyword_doc["keyword"],
-        "positive_count": sentiment_counts["positive_count"],
-        "negative_count": sentiment_counts["negative_count"],
-        "neutral_count": sentiment_counts["neutral_count"],
-        "aspect_sentiments": keyword_doc["aspect_sentiment"]
+        "positive_count": positive_count,
+        "negative_count": negative_count,
+        "neutral_count": neutral_count
     })
 
 if __name__ == "__main__":

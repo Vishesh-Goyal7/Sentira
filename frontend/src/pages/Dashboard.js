@@ -76,15 +76,6 @@ function Dashboard() {
           <Pie data={sentimentChartData} />
         </div>
       </div>
-
-      <div className="aspect-analysis">
-        <h3>Aspect-Based Sentiment Analysis (ABSA)</h3>
-        {sentimentData.aspect_sentiments.map((aspect, index) => (
-          <div key={index} className="aspect">
-            <p><strong>{aspect.word}:</strong> Positive: {aspect.positive}, Negative: {aspect.negative}</p>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }

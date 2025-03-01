@@ -12,7 +12,7 @@ collection = db["tweets"]
 twitter_client = tweepy.Client(bearer_token=BEARER_TOKEN)
 
 # Search for recent tweets (v2 API)
-query = "Tesla"
+query = "BJP"
 tweets = twitter_client.search_recent_tweets(query=query, max_results=10)
 
 if tweets.data:
