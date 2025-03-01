@@ -13,11 +13,12 @@ twitter_client = tweepy.Client(bearer_token=BEARER_TOKEN)
 
 # Search for recent tweets (v2 API)
 query = "Tesla"
-tweets = twitter_client.search_recent_tweets(query=query, max_results=20)
+tweets = twitter_client.search_recent_tweets(query=query, max_results=10)
 
 if tweets.data:
     for tweet in tweets.data:
         collection.insert_one({
+            "keyword": query,
             "tweet_id": str(tweet.id),
             "text": tweet.text,
             "created_at": tweet.created_at,

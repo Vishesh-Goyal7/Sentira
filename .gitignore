@@ -1,3 +1,6 @@
 backend/venv
 .DS_Store
 *.md
+.env
+*.json
+frontend/node_modules
