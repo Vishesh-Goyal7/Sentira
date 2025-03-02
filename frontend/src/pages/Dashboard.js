@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import "../styles/dashboard.css";
 import { Bar, Pie } from "react-chartjs-2";
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement } from "chart.js";
 
@@ -123,7 +124,7 @@ function Dashboard() {
       {/* Display Chart */}
       {chartData && (
         <div className="chart-container">
-          <h3>Sentiment Analysis for {previousSearches[previousSearches.length - 1]}</h3>
+          <h3>Sentiment Analysis</h3>
           {chartType === "bar" ? (
             <Bar data={chartData} options={{ responsive: true }} />
           ) : (

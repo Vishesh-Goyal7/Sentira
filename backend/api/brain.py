@@ -23,7 +23,7 @@ LABEL_MAP = {
 }
 
 # Replace with your API credentials
-BEARER_TOKEN = "AAAAAAAAAAAAAAAAAAAAAHpdzgEAAAAAUbHcVIzFUWgdaK0xSslrny1qaXk%3D0ZDNf9XlsvsUdyQwyFL9NIGTcv9RTQPzpmvWgyVsYzzvCir5pp"  # Required for v2 API
+BEARER_TOKEN = "AAAAAAAAAAAAAAAAAAAAACqhzgEAAAAAE3W4YdNOKzYvnR%2FluNMLu8VPny8%3DdBQSHinUXxFqbWhTGpCunW7UJYWXrf9JwJ9VXwlsfeoaCTDIrT"  # Required for v2 API
 
 # Download NLTK resources
 nltk.download("stopwords")
@@ -37,6 +37,10 @@ collection = db["tweets"]
 
 # Authenticate with Twitter API v2
 twitter_client = tweepy.Client(bearer_token=BEARER_TOKEN)
+
+# Initialize Lemmatizer
+lemmatizer = WordNetLemmatizer()
+stop_words = set(stopwords.words("english"))
 
 # Get tweets from twitter
 def fetchTweets(query):
@@ -109,12 +113,10 @@ def analyse():
     print("Sentiment Analysis completed successfully!")
 
 def process_keyword(keyword):
-    if fetchTweets(keyword):
-        preprocessTweets()
-        analyse()
-        print(f"Processing completed for keyword: {keyword}")
-    else:
-        print("No tweets found.")
-
+    fetchTweets(keyword)
+    preprocessTweets()
+    analyse()
+    print(f"Processing completed for keyword: {keyword}")
+    
 if __name__ == "__main__":
     process_keyword(keyword)
