@@ -18,7 +18,7 @@ tweets = twitter_client.search_recent_tweets(query=query, max_results=10)
 if tweets.data:
     for tweet in tweets.data:
         collection.insert_one({
-            "keyword": query,
+            "keyword": query.lower(),
             "tweet_id": str(tweet.id),
             "text": tweet.text,
             "created_at": tweet.created_at,

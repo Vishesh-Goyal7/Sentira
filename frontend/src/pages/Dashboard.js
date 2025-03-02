@@ -7,75 +7,130 @@ import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Toolti
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement);
 
 function Dashboard() {
-  const [sentimentData, setSentimentData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [previousSearches, setPreviousSearches] = useState([]);
+  const [newKeyword, setNewKeyword] = useState("");
   const [error, setError] = useState("");
+  const [chartData, setChartData] = useState(null);
+  const [chartType, setChartType] = useState(null);
 
+  // Fetch previous searches from MongoDB
   useEffect(() => {
-    axios.get("http://localhost:5012/api/sentiment")
-      .then((response) => {
-        setSentimentData(response.data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError("Error fetching data");
-        setLoading(false);
-      });
+    axios.get("http://localhost:5012/api/previous-searches")
+    .then((response) => {
+      if (Array.isArray(response.data.keywords)) {
+        setPreviousSearches(response.data.keywords);
+      } else {
+        setPreviousSearches([]);
+      }
+    })
+    .catch((error) => {
+      console.error("Error fetching previous searches:", error);
+      setPreviousSearches([]);
+    });
   }, []);
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>{error}</p>;
-
-  // Ensure data exists before using it
-  if (!sentimentData || !sentimentData.positive_count) {
-    return <p>No sentiment data available</p>;
-  }
-
-  // Prepare Data for Charts
-  const sentimentChartData = {
-    labels: ["Positive", "Negative", "Neutral"],
-    datasets: [
-      {
-        label: "Sentiments",
-        data: [
-          sentimentData.positive_count,
-          sentimentData.negative_count,
-          sentimentData.neutral_count,
-        ],
-        backgroundColor: ["#4CAF50", "#F44336", "#FFEB3B"], // Green, Red, Yellow
-        borderColor: ["#388E3C", "#D32F2F", "#FBC02D"],
-        borderWidth: 1,
-      },
-    ],
+  // Handle new search input
+  const handleSearch = () => {
+    if (!newKeyword.trim()) return;
+    
+    axios.post("http://localhost:5012/api/analyze", { keyword: newKeyword })
+      .then((response) => {
+        setPreviousSearches([...previousSearches, response.data]);
+        setNewKeyword("");
+      })
+      .catch(() => setError("Error processing search"));
   };
 
-  const chartOptions = {
-    responsive: true,
-    plugins: {
-      legend: { display: true },
-      title: { display: true, text: "Sentiment Distribution" },
-    },
-    scales: {
-      y: { beginAtZero: true },
-    },
+  // Fetch sentiment data and show chart
+  const handleShowChart = (keyword, type) => {
+    axios.get(`http://localhost:5012/api/sentiment/${keyword}`)
+      .then((response) => {
+        setChartData({
+          labels: ["Positive", "Negative", "Neutral"],
+          datasets: [
+            {
+              label: "Sentiments",
+              data: [
+                response.data.positive_count,
+                response.data.negative_count,
+                response.data.neutral_count,
+              ],
+              backgroundColor: ["#4CAF50", "#F44336", "#FFEB3B"],
+              borderColor: ["#388E3C", "#D32F2F", "#FBC02D"],
+              borderWidth: 1,
+            },
+          ],
+        });
+        setChartType(type);
+      })
+      .catch(() => setError("Error fetching sentiment data"));
   };
 
   return (
     <div className="dashboard">
       <h2>Sentiment Analysis Dashboard</h2>
-      <h3>Keyword: {sentimentData.keyword}</h3>
-
-      <div className="charts">
-        <div className="bar-chart">
-          <h4>Sentiment Distribution</h4>
-          <Bar data={sentimentChartData} options={chartOptions} />
-        </div>
-
-        <div className="pie-chart">
-          <h4>Sentiment Proportion</h4>
-          <Pie data={sentimentChartData} />
-        </div>
+      
+      {/* Display Previous Searches */}
+      <div className="previous-searches-box">
+        <h3>Previous Searches</h3>
+        {previousSearches.length === 0 ? (
+          <p>No previous searches found.</p>
+        ) : (
+          <table>
+            <thead>
+              <tr>
+                <th>Keyword</th>
+                <th>Pie Chart</th>
+                <th>Bar Chart</th>
+              </tr>
+            </thead>
+            <tbody>
+            {previousSearches.length > 0 ? (
+              previousSearches.map((search, index) => (
+                <tr key={index}>
+                  <td>{search}</td>
+                  <td>
+                    <button onClick={() => handleShowChart(search, "pie")}>Pie</button>
+                  </td>
+                  <td>
+                    <button onClick={() => handleShowChart(search, "bar")}>Bar</button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="3">No previous searches available</td>
+              </tr>
+            )}
+            </tbody>
+          </table>
+        )}
       </div>
+      
+      {/* Search for New Keywords */}
+      <div className="search-section">
+        <input 
+          type="text" 
+          placeholder="Search for a keyword..." 
+          value={newKeyword} 
+          onChange={(e) => setNewKeyword(e.target.value)}
+        />
+        <button onClick={handleSearch}>Search</button>
+      </div>
+      
+      {error && <p className="error-message">{error}</p>}
+      
+      {/* Display Chart */}
+      {chartData && (
+        <div className="chart-container">
+          <h3>Sentiment Analysis for {previousSearches[previousSearches.length - 1]}</h3>
+          {chartType === "bar" ? (
+            <Bar data={chartData} options={{ responsive: true }} />
+          ) : (
+            <Pie data={chartData} options={{ responsive: true }} />
+          )}
+        </div>
+      )}
     </div>
   );
 }

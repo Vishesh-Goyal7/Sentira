@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from pymongo import MongoClient
 import bcrypt
 from flask_cors import CORS
+import subprocess
 
 app = Flask(__name__)
 CORS(app)
@@ -48,24 +49,50 @@ def signup():
 
     return jsonify({"success": True}), 201
 
-@app.route("/api/sentiment", methods=["GET"])
-def get_sentiment():
-     
-    keyword_doc = tweets_collection.find_one({}, {"keyword": 1, "sentiment": 1, "clean_text": 1})
+@app.route("/api/sentiment/<keyword>", methods=["GET"])
+def get_sentiment_data(keyword):
+    try:
+        # Fetch records for the given keyword
+        sentiment_records = list(tweets_collection.find({"keyword": keyword}))
 
-    if not keyword_doc:
-        return jsonify({"error": "No data found"}), 404
+        # Count sentiment types
+        positive_count = sum(1 for record in sentiment_records if record["sentiment"] == "Positive")
+        negative_count = sum(1 for record in sentiment_records if record["sentiment"] == "Negative")
+        neutral_count = sum(1 for record in sentiment_records if record["sentiment"] == "Neutral")
 
-    positive_count = tweets_collection.count_documents({"sentiment": "Positive"})
-    negative_count = tweets_collection.count_documents({"sentiment": "Negative"})
-    neutral_count = tweets_collection.count_documents({"sentiment": "Neutral"})
+        # Return the counts
+        return jsonify({
+            "keyword": keyword.lower(),
+            "positive_count": positive_count,
+            "negative_count": negative_count,
+            "neutral_count": neutral_count
+        }), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-    return jsonify({
-        "keyword": keyword_doc["keyword"],
-        "positive_count": positive_count,
-        "negative_count": negative_count,
-        "neutral_count": neutral_count
-    })
+@app.route("/api/previous-searches", methods=["GET"])
+def get_previous_searches():
+    try:
+        # Fetch distinct keywords from the database
+        keywords = tweets_collection.distinct("keyword")
+        
+        # Return the list of keywords
+        return jsonify({"keywords": keywords}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/analyze", methods=["POST"])
+def analyze_keyword():
+    data = request.get_json()
+    keyword = data.get("keyword")
+    
+    if not keyword:
+        return jsonify({"error": "Keyword is required"}), 400
+    
+    from brain import process_keyword
+    result = process_keyword(keyword)
+
+    return jsonify({"message": f"Analysis complete for {keyword}", "result" : result})
 
 if __name__ == "__main__":
     app.run(debug=True, port=5012)

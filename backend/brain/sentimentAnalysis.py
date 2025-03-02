@@ -1,11 +1,7 @@
 import torch
 from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification
-import spacy
 from textblob import TextBlob
 from pymongo import MongoClient
-
-# Load SpaCy for aspect extraction
-nlp = spacy.load("en_core_web_sm")
 
 # Load sentiment analysis model (RoBERTa)
 model_name = "cardiffnlp/twitter-roberta-base-sentiment"
