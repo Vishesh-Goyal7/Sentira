@@ -1,7 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import "../styles/Signup.css"; // Custom CSS for additional styling
+import "../styles/Signup.css"; 
 
 function Signup() {
   const [email, setEmail] = useState("");
@@ -13,7 +13,7 @@ function Signup() {
     e.preventDefault();
     try {
       await axios.post("http://localhost:5012/api/signup", { email, password });
-      navigate("/login"); // Redirect to login page after successful signup
+      navigate("/login"); 
     } catch (err) {
       setError("Signup failed. Please try again.");
     }
@@ -22,12 +22,9 @@ function Signup() {
   return (
     <div className="signup-container d-flex align-items-center justify-content-center">
       <div className="signup-box p-4">
-        {/* Logo at the top-left corner */}
         <img src="logo.jpg" alt="Logo" className="logo" onClick={() => navigate("/login")} />
-        
         <h2 className="text-center">Sign Up</h2>
         {error && <p className="text-danger text-center">{error}</p>}
-        
         <form onSubmit={handleSignup}>
           <div className="mb-3">
             <label className="form-label">Email</label>

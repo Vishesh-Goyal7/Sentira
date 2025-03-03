@@ -3,41 +3,34 @@ from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassifica
 from textblob import TextBlob
 from pymongo import MongoClient
 
-# Load sentiment analysis model (RoBERTa)
 model_name = "cardiffnlp/twitter-roberta-base-sentiment"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForSequenceClassification.from_pretrained(model_name)
 sentiment_pipeline = pipeline("text-classification", model=model, tokenizer=tokenizer)
 
-# Sentiment label mapping
 LABEL_MAP = {
     "LABEL_0": "Negative",
     "LABEL_1": "Neutral",
     "LABEL_2": "Positive"
 }
 
-# Connect to MongoDB
 client = MongoClient("mongodb://localhost:27017/")
 db = client["TwitterSentiment"]
 collection = db["tweets"]
 
-# Function to perform sentiment analysis
 def get_sentiment(text):
-    result = sentiment_pipeline(text)[0]  # Get sentiment result
-    sentiment_label = LABEL_MAP[result["label"]]  # Convert label (e.g., LABEL_0) to human-readable
-    confidence = result["score"]  # Confidence score
+    result = sentiment_pipeline(text)[0]  
+    sentiment_label = LABEL_MAP[result["label"]]  
+    confidence = result["score"]  
     return sentiment_label, confidence
 
-# Process tweets from MongoDB
 tweets = collection.find({}, {"tweet_id": 1, "clean_text": 1})
 
 for tweet in tweets:
     text = tweet["clean_text"]
     
-    # Get overall sentiment
     sentiment, confidence = get_sentiment(text)
 
-    # Update MongoDB with results
     collection.update_one(
         {"tweet_id": tweet["tweet_id"]},
         {"$set": {

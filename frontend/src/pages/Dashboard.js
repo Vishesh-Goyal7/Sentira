@@ -4,7 +4,6 @@ import "../styles/dashboard.css";
 import { Bar, Pie } from "react-chartjs-2";
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement } from "chart.js";
 
-// Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement);
 
 function Dashboard() {
@@ -14,7 +13,6 @@ function Dashboard() {
   const [chartData, setChartData] = useState(null);
   const [chartType, setChartType] = useState(null);
 
-  // Fetch previous searches from MongoDB
   useEffect(() => {
     axios.get("http://localhost:5012/api/previous-searches")
     .then((response) => {
@@ -30,19 +28,19 @@ function Dashboard() {
     });
   }, []);
 
-  // Handle new search input
   const handleSearch = () => {
     if (!newKeyword.trim()) return;
     
     axios.post("http://localhost:5012/api/analyze", { keyword: newKeyword })
       .then((response) => {
-        setPreviousSearches([...previousSearches, response.data]);
+        setPreviousSearches([...previousSearches, response.data.keyword]);
         setNewKeyword("");
+        handleShowChart(response.data.keyword, "pie");
+        handleShowChart(response.data.keyword, "bar");
       })
       .catch(() => setError("Error processing search"));
   };
 
-  // Fetch sentiment data and show chart
   const handleShowChart = (keyword, type) => {
     axios.get(`http://localhost:5012/api/sentiment/${keyword}`)
       .then((response) => {
@@ -77,34 +75,36 @@ function Dashboard() {
         {previousSearches.length === 0 ? (
           <p>No previous searches found.</p>
         ) : (
-          <table>
-            <thead>
-              <tr>
-                <th>Keyword</th>
-                <th>Pie Chart</th>
-                <th>Bar Chart</th>
-              </tr>
-            </thead>
-            <tbody>
-            {previousSearches.length > 0 ? (
-              previousSearches.map((search, index) => (
-                <tr key={index}>
-                  <td>{search}</td>
-                  <td>
-                    <button onClick={() => handleShowChart(search, "pie")}>Pie</button>
-                  </td>
-                  <td>
-                    <button onClick={() => handleShowChart(search, "bar")}>Bar</button>
-                  </td>
+          <div className="table-container">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Keyword</th>
+                  <th>Pie Chart</th>
+                  <th>Bar Chart</th>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="3">No previous searches available</td>
-              </tr>
-            )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+              {previousSearches.length > 0 ? (
+                previousSearches.map((search, index) => (
+                  <tr key={index}>
+                    <td>{search}</td>
+                    <td>
+                      <button onClick={() => handleShowChart(search, "pie")}>Pie</button>
+                    </td>
+                    <td>
+                      <button onClick={() => handleShowChart(search, "bar")}>Bar</button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="3">No previous searches available</td>
+                </tr>
+              )}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
       

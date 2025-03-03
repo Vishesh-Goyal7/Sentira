@@ -1,8 +1,6 @@
-/* Dashboard.css */
-
 body {
-    background-color: #111827; /* Black Background */
-    color: #FBBF24; /* Gold Text */
+    background-color: #111827; 
+    color: #FBBF24; 
     font-family: Arial, sans-serif;
   }
   
@@ -12,7 +10,7 @@ body {
   }
   
   a:hover {
-    color: #d97706; /* Darker Gold on Hover */
+    color: #d97706; 
   }
   
   .dashboard {
@@ -28,7 +26,7 @@ body {
   }
   
   .previous-searches-box {
-    background-color: #1F2937; /* Dark Gray */
+    background-color: #1F2937;
     border-radius: 12px;
     padding: 15px;
     margin-bottom: 20px;
@@ -51,7 +49,7 @@ body {
   }
   
   button {
-    background-color: #D97706; /* Deep Gold */
+    background-color: #D97706;
     color: white;
     border: none;
     padding: 10px 15px;
