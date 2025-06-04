@@ -1,7 +1,7 @@
 import tweepy
 from pymongo import MongoClient
 
-BEARER_TOKEN = "AAAAAAAAAAAAAAAAAAAAAHpdzgEAAAAAUbHcVIzFUWgdaK0xSslrny1qaXk%3D0ZDNf9XlsvsUdyQwyFL9NIGTcv9RTQPzpmvWgyVsYzzvCir5pp"  # Required for v2 API
+BEARER_TOKEN = ""  # Required for v2 API
 
 client = MongoClient("mongodb://localhost:27017/")
 db = client["TwitterSentiment"]
